@@ -23,9 +23,6 @@ with psycopg.connect() as conn:
     with conn.cursor() as cur:
         select_schema(cur)
 
-        expansion_ids = [
-            row[0] for row in cur.execute("SELECT id FROM expansions").fetchall()
-        ]
         rarity_ids = [
             row[0] for row in cur.execute("SELECT id FROM rarities").fetchall()
         ]
@@ -36,8 +33,15 @@ with psycopg.connect() as conn:
 faker = Faker("es_ES", use_weighting=False)
 generator = EpicDataGenerator()
 
-cards = generator.generate(
+expansions = generator.generate(
     n=1000,
+    table_name="expansions",
+    spec={"id": lambda i: i, "name": lambda i: f"Expansion #{i}"},
+)
+expansion_ids = [ex["id"] for ex in expansions]
+
+cards = generator.generate(
+    n=2000,
     table_name="cards",
     spec={
         "num": lambda i: i,
@@ -47,14 +51,14 @@ cards = generator.generate(
 )
 
 pokemon_cards = generator.generate(
-    n=700,
+    n=1700,
     table_name="pokemon_cards",
     spec={
         "num": lambda i: cards[i]["num"],
         "expansion_id": lambda i: cards[i]["expansion_id"],
         "element_type_id": lambda _: random.choice(element_type_ids),
-        "name": lambda i: f"Pokemon card #{i}",
-        "description": lambda i: f"Pokemon card description #{i}",
+        "name": lambda _: faker.name(),
+        "description": lambda _: faker.sentence(),
         "hp": lambda _: random.randint(100, 1000),
         "retreat_cost": lambda _: random.randint(20, 200),
     },
@@ -82,7 +86,7 @@ weaknesses = random.sample(range(len(pokemon_cards)), weaknesses_len)
 generator.generate(
     n=weaknesses_len,
     n_strict=True,
-    table_name="pokemon_weakness",
+    table_name="pokemon_card_weaknesses",
     spec={
         "card_num": lambda i: pokemon_cards[weaknesses[i]]["num"],
         "card_expansion_id": lambda i: pokemon_cards[weaknesses[i]]["expansion_id"],
@@ -95,16 +99,16 @@ resistances = random.sample(range(len(pokemon_cards)), weaknesses_len)
 generator.generate(
     n=resistances_len,
     n_strict=True,
-    table_name="pokemon_resistance",
+    table_name="pokemon_card_resistances",
     spec={
         "card_num": lambda i: pokemon_cards[resistances[i]]["num"],
         "card_expansion_id": lambda i: pokemon_cards[resistances[i]]["expansion_id"],
         "element_type_id": lambda _: random.choice(element_type_ids),
-        "value": lambda _: random.randint(10, 200),
+        "value": lambda _: 10 * random.randint(1, 4),
     },
 )
 
-powered_pokemon_len = int(0.75 * len(pokemon_cards))
+powered_pokemon_len = int(0.10 * len(pokemon_cards))
 powered_pokemon = random.sample(range(len(pokemon_cards)), powered_pokemon_len)
 powers_len = int(0.5 * powered_pokemon_len)
 
@@ -114,8 +118,8 @@ powers = generator.generate(
     table_name="pokemon_powers",
     spec={
         "id": lambda i: i,
-        "name": lambda i: f"Pokemon power #{i}",
-        "description": lambda i: f"Pokemon power description #{i}",
+        "name": lambda _: faker.word(),
+        "description": lambda _: faker.sentence(),
     },
 )
 
@@ -136,13 +140,13 @@ generator.generate(
 )
 
 attacks = generator.generate(
-    n=400,
+    n=1000,
     table_name="attacks",
     spec={
         "id": lambda i: i,
-        "name": lambda i: f"Attack #{i}",
-        "description": lambda i: f"Attack description #{i}",
-        "damage": lambda _: random.randint(1, 200),
+        "name": lambda _: faker.words(2),
+        "description": lambda _: faker.sentence(),
+        "damage": lambda _: 10 * random.randint(1, 15),
     },
 )
 
@@ -165,7 +169,7 @@ generator.generate(
 
 pokemon_attacks = []
 for a in range(len(attacks)):
-    n = random.randint(1, 20)
+    n = random.randint(1, 30)
     for p in random.sample(range(len(pokemon_cards)), n):
         pokemon_attacks.append((p, a))
 
@@ -189,8 +193,8 @@ trainer_cards = generator.generate(
     {
         "num": lambda i: cards[card_base + i]["num"],
         "expansion_id": lambda i: cards[card_base + i]["expansion_id"],
-        "name": lambda i: f"Trainer card #{i}",
-        "description": lambda i: f"Trainer card description #{i}",
+        "name": lambda i: faker.words(2),
+        "description": lambda _: faker.sentence(),
     },
 )
 
@@ -212,22 +216,23 @@ generator.generate(
     {
         "num": lambda i: cards[card_base + i]["num"],
         "expansion_id": lambda i: cards[card_base + i]["expansion_id"],
-        "name": lambda i: f"Special energy card #{i}",
-        "description": lambda i: f"Special energy card description #{i}",
+        "name": lambda _: faker.words(2),
+        "description": lambda _: faker.sentence(),
     },
 )
 
 users = generator.generate(
-    300,
+    2000,
     "users",
     {
         "id": str,
-        "username": lambda i: f"User #{i}",
+        "username": lambda i: f"{i}_{faker.user_name()}",
         "join_date": lambda _: faker.date_between("-5y"),
         "last_drop_date": lambda _: faker.date_time_between("-4m"),
     },
 )
 
+# Cada usuario tiene 0-50 cartas con cantidad entre 1 y 10
 user_cards = []
 for u in range(len(users)):
     n = random.randint(0, 50)
@@ -246,19 +251,20 @@ generator.generate(
     },
 )
 
+# Cada usuario tiene booster packs de 0-3 expansiones con cantidad entre 1 y 5
 user_booster_packs = []
 for u in range(len(users)):
-    n = random.randint(0, len(expansion_ids))
+    n = random.randint(0, min(3, len(expansion_ids)))
     for e in random.sample(expansion_ids, n):
-        user_cards.append((u, e))
+        user_booster_packs.append((u, e))
 
 generator.generate(
     n=len(user_booster_packs),
     n_strict=True,
     table_name="user_owns_booster_pack",
     spec={
-        "user_id": lambda i: users[user_cards[i][0]]["id"],
-        "expansion_id": lambda i: expansion_ids[user_cards[i][1]],
-        "amount": lambda _: random.randint(1, 3),
+        "user_id": lambda i: users[user_booster_packs[i][0]]["id"],
+        "expansion_id": lambda i: user_booster_packs[i][1],
+        "amount": lambda _: random.randint(1, 5),
     },
 )

@@ -1,6 +1,7 @@
 __pycache__/
 node_modules/
 .direnv/
+data/generated/
 
 *.log
 .env*

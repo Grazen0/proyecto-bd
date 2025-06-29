@@ -1,18 +1,18 @@
 CREATE TABLE rarities (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(50) NOT NULL,
+  name VARCHAR(50) NOT NULL UNIQUE,
   CHECK (LENGTH (name) > 0)
 );
 
 CREATE TABLE element_types (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(50) NOT NULL,
+  name VARCHAR(50) NOT NULL UNIQUE,
   CHECK (LENGTH (name) > 0)
 );
 
 CREATE TABLE expansions (
   id INT PRIMARY KEY,
-  name VARCHAR(50),
+  name VARCHAR(50) UNIQUE,
   CHECK (LENGTH (name) > 0)
 );
 
@@ -49,7 +49,7 @@ CREATE TABLE pokemon_card_evolves (
   PRIMARY KEY (to_num, to_expansion_id)
 );
 
-CREATE TABLE pokemon_weakness (
+CREATE TABLE pokemon_card_weaknesses (
   card_num INT NOT NULL,
   card_expansion_id INT NOT NULL,
   element_type_id INT NOT NULL REFERENCEs element_types (id),
@@ -57,7 +57,7 @@ CREATE TABLE pokemon_weakness (
   PRIMARY KEY (card_num, card_expansion_id)
 );
 
-CREATE TABLE pokemon_resistance (
+CREATE TABLE pokemon_card_resistances (
   card_num INT NOT NULL,
   card_expansion_id INT NOT NULL,
   element_type_id INT NOT NULL REFERENCEs element_types (id),
@@ -147,7 +147,7 @@ CREATE TABLE special_energy_cards (
 
 CREATE TABLE users (
   id VARCHAR(50) PRIMARY KEY,
-  username VARCHAR(50) NOT NULL,
+  username VARCHAR(50) NOT NULL UNIQUE,
   join_date TIMESTAMP NOT NULL DEFAULT NOW (),
   last_drop_date TIMESTAMP
 );
