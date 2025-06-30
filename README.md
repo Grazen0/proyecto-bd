@@ -1,5 +1,26 @@
 # Proyecto BD
 
+> [!NOTE] Nota importante
+>
+> La data generada con los scripts, como es muy grande para subirla a GitHub, se encuentra en este [link de Drive](https://drive.google.com/drive/folders/160GlLABwiquvY-NyMvyWOhCZ1Y0HsvAt?usp=sharing). Habiendo descargado la data, el directorio local `data` debería verse así:
+>
+> ```
+> data
+> ├── manual/
+> │   ├── 01-rarities.csv
+> │   └── 02-element_types.csv
+> └── generated/
+>     ├── 1k/
+>     │   └── ...
+>     ├── 10k/
+>     │   └── ...
+>     ├── 100k/
+>     │   └── ...
+>     └── 1000k/
+>         └── ...
+> ...
+> ```
+
 Este repo tiene una configuración de Docker Compose para iniciar un contenedor de PostgreSQL con un volumen configurado de `data/` a `/data`. Se puede iniciar con este comando:
 
 ```bash
