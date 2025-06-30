@@ -34,14 +34,15 @@ faker = Faker("es_ES", use_weighting=False)
 generator = EpicDataGenerator()
 
 expansions = generator.generate(
-    n=1000,
+    n=100,
+    n_strict=True,
     table_name="expansions",
     spec={"id": lambda i: i, "name": lambda i: f"Expansion #{i}"},
 )
 expansion_ids = [ex["id"] for ex in expansions]
 
 cards = generator.generate(
-    n=2000,
+    n=1100,
     table_name="cards",
     spec={
         "num": lambda i: i,
@@ -51,7 +52,7 @@ cards = generator.generate(
 )
 
 pokemon_cards = generator.generate(
-    n=1700,
+    n=1000,
     table_name="pokemon_cards",
     spec={
         "num": lambda i: cards[i]["num"],
@@ -140,7 +141,7 @@ generator.generate(
 )
 
 attacks = generator.generate(
-    n=1000,
+    n=500,
     table_name="attacks",
     spec={
         "id": lambda i: i,
@@ -152,7 +153,7 @@ attacks = generator.generate(
 
 attack_costs = []
 for a in range(len(attacks)):
-    n = random.randint(0, min(4, len(element_type_ids)))
+    n = random.randint(0, min(2, len(element_type_ids)))
     for t in random.sample(element_type_ids, n):
         attack_costs.append((a, t))
 
@@ -169,7 +170,7 @@ generator.generate(
 
 pokemon_attacks = []
 for a in range(len(attacks)):
-    n = random.randint(1, 30)
+    n = random.randint(1, 40)
     for p in random.sample(range(len(pokemon_cards)), n):
         pokemon_attacks.append((p, a))
 
@@ -188,7 +189,7 @@ generator.generate(
 
 card_base = len(pokemon_cards)
 trainer_cards = generator.generate(
-    200,
+    50,
     "trainer_cards",
     {
         "num": lambda i: cards[card_base + i]["num"],
@@ -200,7 +201,7 @@ trainer_cards = generator.generate(
 
 card_base += len(trainer_cards)
 basic_energy_cards = generator.generate(
-    80,
+    30,
     "basic_energy_cards",
     {
         "num": lambda i: cards[card_base + i]["num"],
@@ -222,7 +223,7 @@ generator.generate(
 )
 
 users = generator.generate(
-    2000,
+    1000,
     "users",
     {
         "id": str,
@@ -232,10 +233,10 @@ users = generator.generate(
     },
 )
 
-# Cada usuario tiene 0-50 cartas con cantidad entre 1 y 10
+# Cada usuario tiene 0-30 cartas con cantidad entre 1 y 10
 user_cards = []
 for u in range(len(users)):
-    n = random.randint(0, 50)
+    n = random.randint(0, 30)
     for c in random.sample(range(len(cards)), n):
         user_cards.append((u, c))
 
@@ -254,7 +255,7 @@ generator.generate(
 # Cada usuario tiene booster packs de 0-3 expansiones con cantidad entre 1 y 5
 user_booster_packs = []
 for u in range(len(users)):
-    n = random.randint(0, min(3, len(expansion_ids)))
+    n = random.randint(0, min(2, len(expansion_ids)))
     for e in random.sample(expansion_ids, n):
         user_booster_packs.append((u, e))
 
