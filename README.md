@@ -1,7 +1,6 @@
 # Proyecto BD
 
-> [!NOTE] Nota importante
->
+> [!NOTE]
 > La data generada con los scripts, como es muy grande para subirla a GitHub, se encuentra en este [link de Drive](https://drive.google.com/drive/folders/160GlLABwiquvY-NyMvyWOhCZ1Y0HsvAt?usp=sharing). Habiendo descargado la data, el directorio local `data` debería verse así:
 >
 > ```
@@ -37,4 +36,11 @@ TLDR: Al final, esta secuencia de comandos debería funcionar:
 nix-shell
 docker compose up -d
 ./run_all.sh
+```
+
+PERO si descargas la data del [link de Drive de arriba](https://drive.google.com/drive/folders/160GlLABwiquvY-NyMvyWOhCZ1Y0HsvAt?usp=sharing), puedes simplemente correr los scripts 1 y 3:
+
+```bash
+python src/1_init.py
+python src/3_populate.py
 ```
